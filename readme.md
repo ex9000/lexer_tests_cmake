@@ -3,7 +3,7 @@
 Project with tests for Lexer and Shunting Yard
 
 ## todo list
- - [ ] Lexer `CorrectCode` case
+ - [x] Lexer `CorrectCode` case
  - [ ] Lexer `TrickyCode` case
  - [ ] Lexer `ErrorCode` case
  - [ ] Shunting Yard `CorrectExpression` case
