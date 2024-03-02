@@ -220,4 +220,161 @@ int main() {
     }
 }
 
+TEST(TrickyCode, BasicProgram)
+{
+    using namespace std;
+    string prog = "int main(){return 0;}";
+    vector<Lexem> correct = {
+        { "kwint", "" },
+        { "id", "main" },
+        { "lpar", "" },
+        { "rpar", "" },
+        { "lbrace", "" },
+        { "kwreturn", "" },
+        { "num", "0" },
+        { "semicolon", "" },
+        { "rbrace", "" },
+        LEX_EOF
+    };
+
+    stringstream stream { prog };
+    Lexer lexer(stream);
+
+    for (auto&& lex : correct) {
+        EXPECT_EQ(lex, lexer.getNextLexem());
+    }
+}
+
+TEST(TrickyCode, MultilineString)
+{
+    using namespace std;
+    string prog = R"(out "Hello
+world
+'
+for everyone!!!
+")";
+    string content = "Hello\n"
+                     "world\n"
+                     "'\n"
+                     "for everyone!!!\n";
+    vector<Lexem> correct = {
+        { "kwout", "" },
+        { "str", content },
+        LEX_EOF
+    };
+
+    stringstream stream { prog };
+    Lexer lexer(stream);
+
+    for (auto&& lex : correct) {
+        EXPECT_EQ(lex, lexer.getNextLexem());
+    }
+}
+
+TEST(TrickyCode, Expressions)
+{
+    using namespace std;
+    string prog = "int a=0;int aa=182;out aa+a==-123;";
+    vector<Lexem> correct = {
+        // int a=0;
+        { "kwint", "" },
+        { "id", "a" },
+        { "opassign", "" },
+        { "num", "0" },
+        { "semicolon", "" },
+
+        // int aa=182;
+        { "kwint", "" },
+        { "id", "aa" },
+        { "opassign", "" },
+        { "num", "182" },
+        { "semicolon", "" },
+
+        // out aa+a==-123;
+        { "kwout", "" },
+        { "id", "aa" },
+        { "opplus", "" },
+        { "id", "a" },
+        { "opeq", "" },
+        { "num", "-123" },
+        { "semicolon", "" },
+        LEX_EOF
+    };
+
+    stringstream stream { prog };
+    Lexer lexer(stream);
+
+    for (auto&& lex : correct) {
+        EXPECT_EQ(lex, lexer.getNextLexem());
+    }
+}
+
+TEST(ErrorCode, BadString)
+{
+    using namespace std;
+    string prog = R"(out "incomplete string;)";
+    vector<Lexem> correct = {
+        { "kwout", "" },
+        LEX_ERROR,
+    };
+
+    stringstream stream { prog };
+    Lexer lexer(stream);
+
+    for (auto&& lex : correct) {
+        EXPECT_EQ(lex, lexer.getNextLexem());
+    }
+}
+
+TEST(ErrorCode, EmptyChar)
+{
+    using namespace std;
+    string prog = R"(out '')";
+    vector<Lexem> correct = {
+        { "kwout", "" },
+        LEX_ERROR,
+    };
+
+    stringstream stream { prog };
+    Lexer lexer(stream);
+
+    for (auto&& lex : correct) {
+        EXPECT_EQ(lex, lexer.getNextLexem());
+    }
+}
+
+TEST(ErrorCode, DoubleChar)
+{
+    using namespace std;
+    string prog = R"(out 'xy')";
+    vector<Lexem> correct = {
+        { "kwout", "" },
+        LEX_ERROR,
+    };
+
+    stringstream stream { prog };
+    Lexer lexer(stream);
+
+    for (auto&& lex : correct) {
+        EXPECT_EQ(lex, lexer.getNextLexem());
+    }
+}
+
+TEST(ErrorCode, SingleOperator)
+{
+    using namespace std;
+    string prog = R"(a | b)";
+    vector<Lexem> correct = {
+        { "id", "a" },
+        LEX_ERROR,
+    };
+
+    stringstream stream { prog };
+    Lexer lexer(stream);
+
+    for (auto&& lex : correct) {
+        EXPECT_EQ(lex, lexer.getNextLexem());
+    }
+}
+
 }
